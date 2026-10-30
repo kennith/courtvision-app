@@ -82,13 +82,13 @@ onMounted(() => {
       </div>
     </header>
 
-    <!-- Row-based Workspace Stack: Toolbar Row -> Board in Middle -> Animation Timeline Row -->
+    <!-- Row-based Workspace Stack: Board -> Toolbar Row -> Animation Timeline Row -->
     <div class="workspace-rows">
-      <MarkerToolbar class="row-tools" />
-
       <div class="row-board">
         <CourtCanvas ref="courtCanvasRef" />
       </div>
+
+      <MarkerToolbar class="row-tools" />
 
       <AnimationTimeline class="row-timeline" />
     </div>
