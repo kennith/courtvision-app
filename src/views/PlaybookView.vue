@@ -37,7 +37,6 @@ async function sharePlayCard(play) {
       title: play.title,
       category: play.category,
       courtMode: play.courtMode,
-      courtSurface: play.courtSurface,
       frames: play.frames
     })
     const encoded = encodeURIComponent(btoa(unescape(encodeURIComponent(serialized))))
@@ -96,11 +95,12 @@ async function sharePlayCard(play) {
         <div class="card-top">
           <div class="mini-court-preview">
             <svg viewBox="0 0 200 150" class="mini-svg" aria-hidden="true">
-              <rect x="6" y="6" width="188" height="138" rx="4" fill="#0f172a" stroke="#475569" stroke-width="1.5" />
-              <rect x="68" y="6" width="64" height="56" fill="rgba(37,99,235,0.12)" stroke="#475569" stroke-width="1.5" />
-              <path d="M 76 62 A 24 24 0 0 0 124 62" fill="none" stroke="#475569" stroke-width="1.5" />
+              <rect width="200" height="150" rx="4" fill="#f8fafc" />
+              <rect x="6" y="6" width="188" height="138" rx="2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.5" />
+              <rect x="68" y="6" width="64" height="56" fill="rgba(37,99,235,0.07)" stroke="#1e293b" stroke-width="1.5" />
+              <path d="M 76 62 A 24 24 0 0 0 124 62" fill="none" stroke="#1e293b" stroke-width="1.5" />
               <circle cx="100" cy="18" r="4" fill="none" stroke="#ea580c" stroke-width="1.5" />
-              <path d="M 26 6 L 26 48.4 A 80 80 0 0 0 174 48.4 L 174 6" fill="none" stroke="#475569" stroke-width="1.5" />
+              <path d="M 26 6 L 26 48.4 A 80 80 0 0 0 174 48.4 L 174 6" fill="none" stroke="#1e293b" stroke-width="1.5" />
               <!-- Render first frame tokens -->
               <g v-if="play.frames && play.frames[0]">
                 <template v-for="tk in play.frames[0].tokens" :key="tk.id">

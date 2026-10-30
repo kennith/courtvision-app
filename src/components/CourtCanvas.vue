@@ -149,7 +149,7 @@ function onPointerUp(event) {
       boardStore.addStroke({
         id: `st-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         tool: boardStore.activeTool,
-        color: boardStore.markerColor,
+        color: '#0f172a',
         width: boardStore.markerWidth,
         points: [...activeStrokePoints.value]
       })
@@ -159,57 +159,23 @@ function onPointerUp(event) {
   }
 }
 
-// Drawing helpers
+// Drawing helpers (Whiteboard court only)
 function drawCourtMarkings(ctx, w, h) {
-  const surface = boardStore.courtSurface
   const mode = boardStore.courtMode
 
-  // 1. Background surface
-  if (surface === 'whiteboard') {
-    ctx.fillStyle = '#f8fafc'
-    ctx.fillRect(0, 0, w, h)
-    ctx.fillStyle = 'rgba(148, 163, 184, 0.22)'
-    const step = Math.max(24, Math.round(w / 28))
-    for (let gx = step; gx < w; gx += step) {
-      for (let gy = step; gy < h; gy += step) {
-        ctx.fillRect(gx, gy, 1.5, 1.5)
-      }
+  // 1. Whiteboard background surface
+  ctx.fillStyle = '#f8fafc'
+  ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = 'rgba(148, 163, 184, 0.22)'
+  const step = Math.max(24, Math.round(w / 28))
+  for (let gx = step; gx < w; gx += step) {
+    for (let gy = step; gy < h; gy += step) {
+      ctx.fillRect(gx, gy, 1.5, 1.5)
     }
-  } else if (surface === 'hardwood') {
-    const grad = ctx.createLinearGradient(0, 0, w, h)
-    grad.addColorStop(0, '#d99b52')
-    grad.addColorStop(0.5, '#e4ad6b')
-    grad.addColorStop(1, '#c9883e')
-    ctx.fillStyle = grad
-    ctx.fillRect(0, 0, w, h)
-
-    ctx.strokeStyle = 'rgba(120, 65, 15, 0.13)'
-    ctx.lineWidth = 1
-    const plankCount = 26
-    for (let i = 1; i < plankCount; i++) {
-      const py = (h / plankCount) * i
-      ctx.beginPath()
-      ctx.moveTo(0, py)
-      ctx.lineTo(w, py)
-      ctx.stroke()
-    }
-  } else {
-    ctx.fillStyle = '#0f172a'
-    ctx.fillRect(0, 0, w, h)
   }
 
-  const lineColor =
-    surface === 'whiteboard'
-      ? '#1e293b'
-      : surface === 'hardwood'
-      ? '#ffffff'
-      : '#475569'
-  const paintFill =
-    surface === 'whiteboard'
-      ? 'rgba(37, 99, 235, 0.07)'
-      : surface === 'hardwood'
-      ? 'rgba(30, 58, 138, 0.28)'
-      : 'rgba(37, 99, 235, 0.12)'
+  const lineColor = '#1e293b'
+  const paintFill = 'rgba(37, 99, 235, 0.07)'
 
   ctx.save()
   ctx.strokeStyle = lineColor
@@ -225,7 +191,6 @@ function drawCourtMarkings(ctx, w, h) {
   ctx.strokeRect(pad, pad, cw, ch)
 
   if (mode === 'half') {
-    // Half court oriented with basket at TOP (y = pad) and half-court line at BOTTOM (y = pad + ch)
     const cx = w / 2
     const topY = pad
     const bottomY = pad + ch
@@ -273,9 +238,7 @@ function drawCourtMarkings(ctx, w, h) {
     ctx.arc(cx, rimY, cw * 0.08, 0, Math.PI, false)
     ctx.stroke()
 
-    // Regulation-proportioned 3-Point Line:
-    // Corner lines run straight down from baseline at +/- cornerXOffset,
-    // meeting the circular arc centered at (cx, rimY) at exact geometric intersection.
+    // Regulation-proportioned 3-Point Line
     const threeRadius = Math.min(cw * 0.44, ch * 0.56)
     const cornerXOffset = threeRadius * (22 / 23.75)
     const dy = Math.sqrt(threeRadius * threeRadius - cornerXOffset * cornerXOffset)
@@ -330,13 +293,11 @@ function drawCourtMarkings(ctx, w, h) {
     const leftRimRadius = ch * 0.025
     const leftRimX = leftBackboardX + leftRimRadius * 1.35
 
-    // Left Backboard
     ctx.beginPath()
     ctx.moveTo(leftBackboardX, midY - ch * 0.06)
     ctx.lineTo(leftBackboardX, midY + ch * 0.06)
     ctx.stroke()
 
-    // Left 3-Point Line (straight corner lines + tangent circular arc)
     const leftBreakX = leftRimX + dx
     const leftStartAngle = Math.atan2(-cornerYOffset, dx)
     const leftEndAngle = Math.atan2(cornerYOffset, dx)
@@ -347,7 +308,6 @@ function drawCourtMarkings(ctx, w, h) {
     ctx.lineTo(leftX, midY + cornerYOffset)
     ctx.stroke()
 
-    // Left Rim
     ctx.save()
     ctx.strokeStyle = '#ea580c'
     ctx.beginPath()
@@ -368,13 +328,11 @@ function drawCourtMarkings(ctx, w, h) {
     const rightRimRadius = ch * 0.025
     const rightRimX = rightBackboardX - rightRimRadius * 1.35
 
-    // Right Backboard
     ctx.beginPath()
     ctx.moveTo(rightBackboardX, midY - ch * 0.06)
     ctx.lineTo(rightBackboardX, midY + ch * 0.06)
     ctx.stroke()
 
-    // Right 3-Point Line (straight corner lines + tangent circular arc)
     const rightBreakX = rightRimX - dx
     const rightStartAngle = Math.atan2(-cornerYOffset, -dx)
     const rightEndAngle = Math.atan2(cornerYOffset, -dx)
@@ -385,7 +343,6 @@ function drawCourtMarkings(ctx, w, h) {
     ctx.lineTo(rightX, midY + cornerYOffset)
     ctx.stroke()
 
-    // Right Rim
     ctx.save()
     ctx.strokeStyle = '#ea580c'
     ctx.beginPath()
@@ -427,8 +384,8 @@ function drawSingleStroke(ctx, stroke, w, h) {
   if (!pts || pts.length < 2) return
 
   ctx.save()
-  ctx.strokeStyle = stroke.color
-  ctx.fillStyle = stroke.color
+  ctx.strokeStyle = '#0f172a'
+  ctx.fillStyle = '#0f172a'
   ctx.lineWidth = stroke.width * (w / 700)
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
@@ -571,8 +528,7 @@ function drawTokens(ctx, w, h) {
 
     if (boardStore.showPlayerRoles && tk.role) {
       ctx.font = `600 ${Math.round(tokenRadius * 0.52)}px Inter, sans-serif`
-      ctx.fillStyle =
-        boardStore.courtSurface === 'whiteboard' ? '#0f172a' : '#f8fafc'
+      ctx.fillStyle = '#0f172a'
       ctx.fillText(tk.role, cx, cy + tokenRadius + 10)
     }
 
@@ -605,7 +561,7 @@ function renderBoard() {
       ctx,
       {
         tool: boardStore.activeTool,
-        color: boardStore.markerColor,
+        color: '#0f172a',
         width: boardStore.markerWidth,
         points: activeStrokePoints.value
       },
@@ -680,7 +636,6 @@ watch(
   () => [
     boardStore.currentFrameIndex,
     boardStore.courtMode,
-    boardStore.courtSurface,
     boardStore.showDefense,
     boardStore.showPlayerRoles,
     boardStore.currentFrame.strokes.length,

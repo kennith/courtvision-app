@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 const STORAGE_KEY = 'courtvision_saved_plays_v1'
+const BLACK_INK = '#0f172a'
 
 function createDefaultTokens(courtMode = 'half') {
   if (courtMode === 'full') {
@@ -40,7 +41,6 @@ const DEFAULT_PLAYS = [
     title: 'Horns High Ball Screen & Flare',
     category: 'Offense',
     courtMode: 'half',
-    courtSurface: 'whiteboard',
     updatedAt: '2026-10-30T12:00:00Z',
     frames: [
       {
@@ -63,21 +63,21 @@ const DEFAULT_PLAYS = [
           {
             id: 's1',
             tool: 'screen',
-            color: '#2563eb',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.35, y: 0.45 }, { x: 0.44, y: 0.66 }]
           },
           {
             id: 's2',
             tool: 'dribble',
-            color: '#2563eb',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.50, y: 0.72 }, { x: 0.38, y: 0.64 }, { x: 0.28, y: 0.45 }]
           },
           {
             id: 's3',
             tool: 'arrow',
-            color: '#eab308',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.35, y: 0.45 }, { x: 0.44, y: 0.22 }]
           }
@@ -103,14 +103,14 @@ const DEFAULT_PLAYS = [
           {
             id: 's4',
             tool: 'pass',
-            color: '#16a34a',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.28, y: 0.45 }, { x: 0.43, y: 0.23 }]
           },
           {
             id: 's5',
             tool: 'pass',
-            color: '#ea580c',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.28, y: 0.45 }, { x: 0.14, y: 0.23 }]
           }
@@ -141,7 +141,6 @@ const DEFAULT_PLAYS = [
     title: '2-3 Zone Wing Trap & Weakside Rotation',
     category: 'Defense',
     courtMode: 'half',
-    courtSurface: 'hardwood',
     updatedAt: '2026-10-30T11:30:00Z',
     frames: [
       {
@@ -164,21 +163,21 @@ const DEFAULT_PLAYS = [
           {
             id: 'zs1',
             tool: 'pass',
-            color: '#2563eb',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.50, y: 0.72 }, { x: 0.20, y: 0.50 }]
           },
           {
             id: 'zs2',
             tool: 'arrow',
-            color: '#dc2626',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.38, y: 0.50 }, { x: 0.23, y: 0.53 }]
           },
           {
             id: 'zs3',
             tool: 'arrow',
-            color: '#dc2626',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.26, y: 0.24 }, { x: 0.20, y: 0.44 }]
           }
@@ -209,7 +208,6 @@ const DEFAULT_PLAYS = [
     title: 'BLOB Box Elevator Doors',
     category: 'Inbound',
     courtMode: 'half',
-    courtSurface: 'dark',
     updatedAt: '2026-10-30T10:15:00Z',
     frames: [
       {
@@ -232,21 +230,21 @@ const DEFAULT_PLAYS = [
           {
             id: 'bs1',
             tool: 'arrow',
-            color: '#eab308',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.64, y: 0.22 }, { x: 0.50, y: 0.32 }, { x: 0.50, y: 0.68 }]
           },
           {
             id: 'bs2',
             tool: 'screen',
-            color: '#2563eb',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.36, y: 0.44 }, { x: 0.46, y: 0.44 }]
           },
           {
             id: 'bs3',
             tool: 'screen',
-            color: '#2563eb',
+            color: BLACK_INK,
             width: 4,
             points: [{ x: 0.64, y: 0.44 }, { x: 0.54, y: 0.44 }]
           }
@@ -284,24 +282,13 @@ export const useBoardStore = defineStore('board', () => {
   const playTitle = ref('Untitled Play')
   const playCategory = ref('Offense')
   const courtMode = ref('half') // 'half' | 'full'
-  const courtSurface = ref('whiteboard') // 'whiteboard' | 'hardwood' | 'dark'
   const showDefense = ref(true)
   const showPlayerRoles = ref(true)
 
-  // Marker & tool state
+  // Marker & tool state (fixed black dry-erase ink)
   const activeTool = ref('pen') // 'select' | 'pen' | 'arrow' | 'pass' | 'dribble' | 'screen' | 'eraser'
-  const markerColor = ref('#2563eb')
+  const markerColor = ref(BLACK_INK)
   const markerWidth = ref(4)
-
-  const markerColors = [
-    { name: 'Offense Blue', hex: '#2563eb' },
-    { name: 'Defense Red', hex: '#dc2626' },
-    { name: 'Highlight Gold', hex: '#eab308' },
-    { name: 'Pass Green', hex: '#16a34a' },
-    { name: 'Coach Black', hex: '#0f172a' },
-    { name: 'Chalk White', hex: '#f8fafc' },
-    { name: 'Basketball Orange', hex: '#ea580c' }
-  ]
 
   // Multi-frame animation state
   const frames = ref([
@@ -384,7 +371,10 @@ export const useBoardStore = defineStore('board', () => {
   })
 
   function addStroke(stroke) {
-    currentFrame.value.strokes.push(stroke)
+    currentFrame.value.strokes.push({
+      ...stroke,
+      color: BLACK_INK
+    })
     if (!redoStacks.value[currentFrameIndex.value]) {
       redoStacks.value[currentFrameIndex.value] = []
     }
@@ -615,7 +605,6 @@ export const useBoardStore = defineStore('board', () => {
       title: finalTitle,
       category: finalCategory,
       courtMode: courtMode.value,
-      courtSurface: courtSurface.value,
       updatedAt: new Date().toISOString(),
       frames: cloneDeep(frames.value)
     }
@@ -637,7 +626,6 @@ export const useBoardStore = defineStore('board', () => {
     playTitle.value = play.title || 'Loaded Play'
     playCategory.value = play.category || 'Offense'
     courtMode.value = play.courtMode || 'half'
-    courtSurface.value = play.courtSurface || 'whiteboard'
     frames.value = cloneDeep(play.frames || [
       {
         id: 'frame-1',
@@ -664,7 +652,6 @@ export const useBoardStore = defineStore('board', () => {
       title: playTitle.value,
       category: playCategory.value,
       courtMode: courtMode.value,
-      courtSurface: courtSurface.value,
       frames: frames.value
     })
   }
@@ -679,7 +666,6 @@ export const useBoardStore = defineStore('board', () => {
       title: parsed.title || 'Imported Play',
       category: parsed.category || 'Offense',
       courtMode: parsed.courtMode || 'half',
-      courtSurface: parsed.courtSurface || 'whiteboard',
       updatedAt: new Date().toISOString(),
       frames: parsed.frames
     }
@@ -694,13 +680,11 @@ export const useBoardStore = defineStore('board', () => {
     playTitle,
     playCategory,
     courtMode,
-    courtSurface,
     showDefense,
     showPlayerRoles,
     activeTool,
     markerColor,
     markerWidth,
-    markerColors,
     frames,
     currentFrameIndex,
     currentFrame,

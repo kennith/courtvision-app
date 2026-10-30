@@ -53,29 +53,15 @@ function onWidthInput(e) {
       </div>
     </section>
 
-    <!-- Marker Colors -->
+    <!-- Marker Tip & Stroke Actions -->
     <section class="tool-section">
       <div class="section-row">
-        <h2 class="section-heading">Marker Color</h2>
+        <h2 class="section-heading">Marker Tip Size</h2>
         <span class="badge-thickness">{{ boardStore.markerWidth }}px</span>
-      </div>
-      <div class="color-swatch-row" role="radiogroup" aria-label="Marker color selection">
-        <button
-          v-for="swatch in boardStore.markerColors"
-          :key="swatch.hex"
-          type="button"
-          class="color-swatch"
-          :class="{ selected: boardStore.markerColor === swatch.hex }"
-          :style="{ backgroundColor: swatch.hex }"
-          :aria-label="swatch.name"
-          :aria-pressed="boardStore.markerColor === swatch.hex"
-          :title="swatch.name"
-          @click="boardStore.markerColor = swatch.hex"
-        ></button>
       </div>
 
       <label class="slider-label" for="marker-width-range">
-        <span>Tip Size</span>
+        <span>Width</span>
         <input
           id="marker-width-range"
           type="range"
@@ -150,33 +136,6 @@ function onWidthInput(e) {
           @click="boardStore.setCourtMode('full')"
         >
           Full Court
-        </button>
-      </div>
-
-      <div class="segmented-group" role="group" aria-label="Court surface theme">
-        <button
-          type="button"
-          class="seg-btn"
-          :class="{ active: boardStore.courtSurface === 'whiteboard' }"
-          @click="boardStore.courtSurface = 'whiteboard'"
-        >
-          Whiteboard
-        </button>
-        <button
-          type="button"
-          class="seg-btn"
-          :class="{ active: boardStore.courtSurface === 'hardwood' }"
-          @click="boardStore.courtSurface = 'hardwood'"
-        >
-          Hardwood
-        </button>
-        <button
-          type="button"
-          class="seg-btn"
-          :class="{ active: boardStore.courtSurface === 'dark' }"
-          @click="boardStore.courtSurface = 'dark'"
-        >
-          Slate
         </button>
       </div>
 
@@ -280,26 +239,6 @@ function onWidthInput(e) {
 
 .tool-icon {
   font-size: 1rem;
-}
-
-.color-swatch-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
-.color-swatch {
-  inline-size: 1.75rem;
-  block-size: 1.75rem;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  transition: transform 0.12s ease, border-color 0.12s ease;
-}
-
-.color-swatch.selected {
-  transform: scale(1.16);
-  border-color: #ffffff;
-  box-shadow: 0 0 0 2px var(--brand-color);
 }
 
 .slider-label {
