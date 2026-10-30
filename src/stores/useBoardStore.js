@@ -285,10 +285,10 @@ export const useBoardStore = defineStore('board', () => {
   const showDefense = ref(true)
   const showPlayerRoles = ref(true)
 
-  // Marker & tool state (fixed black dry-erase ink)
+  // Marker & tool state (fixed black dry-erase ink, 5px tip)
   const activeTool = ref('pen') // 'select' | 'pen' | 'arrow' | 'pass' | 'dribble' | 'screen' | 'eraser'
   const markerColor = ref(BLACK_INK)
-  const markerWidth = ref(4)
+  const markerWidth = ref(5)
 
   // Multi-frame animation state
   const frames = ref([
@@ -373,7 +373,8 @@ export const useBoardStore = defineStore('board', () => {
   function addStroke(stroke) {
     currentFrame.value.strokes.push({
       ...stroke,
-      color: BLACK_INK
+      color: BLACK_INK,
+      width: 5
     })
     if (!redoStacks.value[currentFrameIndex.value]) {
       redoStacks.value[currentFrameIndex.value] = []

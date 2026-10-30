@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from 'vue'
 import { useBoardStore } from '@/stores/useBoardStore'
 
 const boardStore = useBoardStore()
@@ -21,15 +20,6 @@ const formations = [
   { id: 'box', label: 'Box Set' },
   { id: '2-3-zone', label: '2-3 Zone' }
 ]
-
-const strokeProgressStyle = computed(() => {
-  const pct = ((boardStore.markerWidth - 2) / (10 - 2)) * 100
-  return { '--progress': `${pct}%` }
-})
-
-function onWidthInput(e) {
-  boardStore.markerWidth = Number(e.target.value)
-}
 </script>
 
 <template>
@@ -50,30 +40,6 @@ function onWidthInput(e) {
           <span class="tool-icon" aria-hidden="true">{{ tool.icon }}</span>
           <span class="tool-label">{{ tool.label }}</span>
         </button>
-      </div>
-    </section>
-
-    <!-- Marker Tip & Stroke Actions -->
-    <section class="tool-section">
-      <div class="section-row">
-        <h2 class="section-heading">Marker Tip</h2>
-        <span class="badge-thickness">{{ boardStore.markerWidth }}px</span>
-      </div>
-
-      <div class="tip-and-actions">
-        <label class="slider-label" for="marker-width-range">
-          <span class="sr-label">Width</span>
-          <input
-            id="marker-width-range"
-            type="range"
-            min="2"
-            max="10"
-            step="1"
-            :value="boardStore.markerWidth"
-            :style="strokeProgressStyle"
-            @input="onWidthInput"
-          />
-        </label>
 
         <div class="action-pair">
           <button
@@ -193,13 +159,6 @@ function onWidthInput(e) {
   border-inline-end: none;
 }
 
-.section-row {
-  display: flex;
-  align-items: safe center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
 .section-heading {
   font-size: 0.72rem;
   text-transform: uppercase;
@@ -208,15 +167,10 @@ function onWidthInput(e) {
   font-weight: 700;
 }
 
-.badge-thickness {
-  font-size: 0.74rem;
-  color: var(--brand-color);
-  font-weight: 700;
-}
-
 .tool-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: safe center;
   gap: 0.35rem;
 }
 
@@ -248,33 +202,15 @@ function onWidthInput(e) {
   font-size: 0.95rem;
 }
 
-.tip-and-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: safe center;
-  gap: 0.55rem;
-}
-
-.slider-label {
-  display: inline-flex;
-  align-items: safe center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.slider-label input[type="range"] {
-  inline-size: 90px;
-}
-
 .action-pair {
   display: flex;
   gap: 0.35rem;
+  margin-inline-start: 0.35rem;
 }
 
 .secondary-btn,
 .danger-btn {
-  padding-block: 0.4rem;
+  padding-block: 0.42rem;
   padding-inline: 0.55rem;
   font-size: 0.78rem;
   font-weight: 600;
