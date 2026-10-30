@@ -82,14 +82,15 @@ onMounted(() => {
       </div>
     </header>
 
-    <!-- Main 2-Column Responsive Grid -->
-    <div class="workspace-grid">
-      <MarkerToolbar class="area-tools" />
+    <!-- Row-based Workspace Stack: Toolbar Row -> Board in Middle -> Animation Timeline Row -->
+    <div class="workspace-rows">
+      <MarkerToolbar class="row-tools" />
 
-      <div class="area-center">
+      <div class="row-board">
         <CourtCanvas ref="courtCanvasRef" />
-        <AnimationTimeline />
       </div>
+
+      <AnimationTimeline class="row-timeline" />
     </div>
 
     <SaveShareModal
@@ -105,7 +106,7 @@ onMounted(() => {
   flex-direction: column;
   gap: 0.75rem;
   padding: 0.75rem 1.25rem;
-  max-inline-size: 1520px;
+  max-inline-size: 1440px;
   margin-inline: auto;
   inline-size: 100%;
 }
@@ -180,32 +181,16 @@ onMounted(() => {
   font-weight: 700;
 }
 
-.workspace-grid {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  grid-template-areas: "tools center";
-  gap: 0.85rem;
-  align-items: start;
-}
-
-.area-tools {
-  grid-area: tools;
-}
-
-.area-center {
-  grid-area: center;
+.workspace-rows {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  min-inline-size: 0;
+  inline-size: 100%;
 }
 
-@media (max-width: 780px) {
-  .workspace-grid {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "center"
-      "tools";
-  }
+.row-board {
+  display: flex;
+  justify-content: center;
+  inline-size: 100%;
 }
 </style>

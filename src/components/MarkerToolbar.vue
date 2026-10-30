@@ -33,11 +33,11 @@ function onWidthInput(e) {
 </script>
 
 <template>
-  <aside class="toolbar-panel scrollable-panel" aria-label="Coaching Board Tools">
+  <aside class="toolbar-panel" aria-label="Coaching Board Tools">
     <!-- Tool Selector -->
     <section class="tool-section">
       <h2 class="section-heading">Dry-Erase Tools</h2>
-      <div class="tool-grid">
+      <div class="tool-row">
         <button
           v-for="tool in tools"
           :key="tool.id"
@@ -56,48 +56,50 @@ function onWidthInput(e) {
     <!-- Marker Tip & Stroke Actions -->
     <section class="tool-section">
       <div class="section-row">
-        <h2 class="section-heading">Marker Tip Size</h2>
+        <h2 class="section-heading">Marker Tip</h2>
         <span class="badge-thickness">{{ boardStore.markerWidth }}px</span>
       </div>
 
-      <label class="slider-label" for="marker-width-range">
-        <span>Width</span>
-        <input
-          id="marker-width-range"
-          type="range"
-          min="2"
-          max="10"
-          step="1"
-          :value="boardStore.markerWidth"
-          :style="strokeProgressStyle"
-          @input="onWidthInput"
-        />
-      </label>
+      <div class="tip-and-actions">
+        <label class="slider-label" for="marker-width-range">
+          <span class="sr-label">Width</span>
+          <input
+            id="marker-width-range"
+            type="range"
+            min="2"
+            max="10"
+            step="1"
+            :value="boardStore.markerWidth"
+            :style="strokeProgressStyle"
+            @input="onWidthInput"
+          />
+        </label>
 
-      <div class="action-pair">
-        <button
-          type="button"
-          class="secondary-btn"
-          :disabled="boardStore.currentFrame.strokes.length === 0"
-          @click="boardStore.undoStroke()"
-        >
-          ↩ Undo
-        </button>
-        <button
-          type="button"
-          class="secondary-btn"
-          :disabled="!(boardStore.redoStacks[boardStore.currentFrameIndex]?.length)"
-          @click="boardStore.redoStroke()"
-        >
-          ↪ Redo
-        </button>
-        <button
-          type="button"
-          class="danger-btn"
-          @click="boardStore.clearCurrentStrokes()"
-        >
-          Clear Ink
-        </button>
+        <div class="action-pair">
+          <button
+            type="button"
+            class="secondary-btn"
+            :disabled="boardStore.currentFrame.strokes.length === 0"
+            @click="boardStore.undoStroke()"
+          >
+            ↩ Undo
+          </button>
+          <button
+            type="button"
+            class="secondary-btn"
+            :disabled="!(boardStore.redoStacks[boardStore.currentFrameIndex]?.length)"
+            @click="boardStore.redoStroke()"
+          >
+            ↪ Redo
+          </button>
+          <button
+            type="button"
+            class="danger-btn"
+            @click="boardStore.clearCurrentStrokes()"
+          >
+            Clear Ink
+          </button>
+        </div>
       </div>
     </section>
 
@@ -120,44 +122,46 @@ function onWidthInput(e) {
     <!-- Court Configuration -->
     <section class="tool-section">
       <h2 class="section-heading">Court &amp; Display</h2>
-      <div class="segmented-group" role="group" aria-label="Court dimensions">
-        <button
-          type="button"
-          class="seg-btn"
-          :class="{ active: boardStore.courtMode === 'half' }"
-          @click="boardStore.setCourtMode('half')"
-        >
-          Half Court
-        </button>
-        <button
-          type="button"
-          class="seg-btn"
-          :class="{ active: boardStore.courtMode === 'full' }"
-          @click="boardStore.setCourtMode('full')"
-        >
-          Full Court
-        </button>
-      </div>
+      <div class="court-display-row">
+        <div class="segmented-group" role="group" aria-label="Court dimensions">
+          <button
+            type="button"
+            class="seg-btn"
+            :class="{ active: boardStore.courtMode === 'half' }"
+            @click="boardStore.setCourtMode('half')"
+          >
+            Half Court
+          </button>
+          <button
+            type="button"
+            class="seg-btn"
+            :class="{ active: boardStore.courtMode === 'full' }"
+            @click="boardStore.setCourtMode('full')"
+          >
+            Full Court
+          </button>
+        </div>
 
-      <div class="toggles-stack">
-        <label class="checkbox-label" for="toggle-defense">
-          <input
-            id="toggle-defense"
-            v-model="boardStore.showDefense"
-            type="checkbox"
-            class="visually-hidden"
-          />
-          <span>Show Defenders (X1–X5)</span>
-        </label>
-        <label class="checkbox-label" for="toggle-roles">
-          <input
-            id="toggle-roles"
-            v-model="boardStore.showPlayerRoles"
-            type="checkbox"
-            class="visually-hidden"
-          />
-          <span>Show Position Labels (PG–C)</span>
-        </label>
+        <div class="toggles-row">
+          <label class="checkbox-label" for="toggle-defense">
+            <input
+              id="toggle-defense"
+              v-model="boardStore.showDefense"
+              type="checkbox"
+              class="visually-hidden"
+            />
+            <span>Defenders (X1–X5)</span>
+          </label>
+          <label class="checkbox-label" for="toggle-roles">
+            <input
+              id="toggle-roles"
+              v-model="boardStore.showPlayerRoles"
+              type="checkbox"
+              class="visually-hidden"
+            />
+            <span>Roles (PG–C)</span>
+          </label>
+        </div>
       </div>
     </section>
   </aside>
@@ -168,33 +172,36 @@ function onWidthInput(e) {
   background-color: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: 0.85rem;
+  padding: 0.7rem 0.9rem;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: stretch;
   gap: 1rem;
 }
 
 .tool-section {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
-  padding-block-end: 0.85rem;
-  border-block-end: 1px solid rgba(148, 163, 184, 0.14);
+  justify-content: space-between;
+  gap: 0.45rem;
+  padding-inline-end: 1rem;
+  border-inline-end: 1px solid rgba(148, 163, 184, 0.14);
 }
 
 .tool-section:last-child {
-  padding-block-end: 0;
-  border-block-end: none;
+  padding-inline-end: 0;
+  border-inline-end: none;
 }
 
 .section-row {
   display: flex;
   align-items: safe center;
   justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .section-heading {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
@@ -202,29 +209,29 @@ function onWidthInput(e) {
 }
 
 .badge-thickness {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   color: var(--brand-color);
   font-weight: 700;
 }
 
-.tool-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.4rem;
+.tool-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
 .tool-btn {
-  display: flex;
+  display: inline-flex;
   align-items: safe center;
-  gap: 0.45rem;
-  padding-block: 0.5rem;
+  gap: 0.38rem;
+  padding-block: 0.42rem;
   padding-inline: 0.6rem;
   background-color: var(--bg-elevated);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  text-align: start;
+  white-space: nowrap;
 }
 
 .tool-btn:hover {
@@ -238,36 +245,42 @@ function onWidthInput(e) {
 }
 
 .tool-icon {
-  font-size: 1rem;
+  font-size: 0.95rem;
+}
+
+.tip-and-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: safe center;
+  gap: 0.55rem;
 }
 
 .slider-label {
-  display: flex;
+  display: inline-flex;
   align-items: safe center;
-  gap: 0.65rem;
-  font-size: 0.8rem;
+  gap: 0.4rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
 }
 
 .slider-label input[type="range"] {
-  flex: 1 1 auto;
+  inline-size: 90px;
 }
 
 .action-pair {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.35rem;
 }
 
 .secondary-btn,
 .danger-btn {
-  flex: 1 1 auto;
   padding-block: 0.4rem;
-  padding-inline: 0.5rem;
+  padding-inline: 0.55rem;
   font-size: 0.78rem;
   font-weight: 600;
   background-color: var(--bg-elevated);
   border: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 .secondary-btn:disabled {
@@ -291,13 +304,13 @@ function onWidthInput(e) {
 }
 
 .chip-btn {
-  flex: 1 1 70px;
-  padding-block: 0.38rem;
-  padding-inline: 0.5rem;
+  padding-block: 0.4rem;
+  padding-inline: 0.6rem;
   font-size: 0.78rem;
   font-weight: 600;
   background-color: var(--bg-elevated);
   border: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
 .chip-btn:hover {
@@ -305,21 +318,29 @@ function onWidthInput(e) {
   color: #fff;
 }
 
+.court-display-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: safe center;
+  gap: 0.65rem;
+}
+
 .segmented-group {
   display: flex;
   background-color: var(--bg-elevated);
-  padding: 0.2rem;
+  padding: 0.18rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   gap: 0.2rem;
 }
 
 .seg-btn {
-  flex: 1 1 0;
-  padding-block: 0.35rem;
+  padding-block: 0.3rem;
+  padding-inline: 0.6rem;
   font-size: 0.76rem;
   font-weight: 600;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .seg-btn.active {
@@ -327,18 +348,27 @@ function onWidthInput(e) {
   color: var(--text-main);
 }
 
-.toggles-stack {
+.toggles-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  margin-block-start: 0.2rem;
+  flex-wrap: wrap;
+  align-items: safe center;
+  gap: 0.65rem;
 }
 
 .checkbox-label {
   display: inline-flex;
   align-items: safe center;
-  gap: 0.5rem;
-  font-size: 0.82rem;
+  gap: 0.4rem;
+  font-size: 0.8rem;
   cursor: pointer;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .tool-section {
+    padding-inline-end: 0;
+    border-inline-end: none;
+    inline-size: 100%;
+  }
 }
 </style>
