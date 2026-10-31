@@ -427,6 +427,24 @@ export const useBoardStore = defineStore('board', () => {
     return { player: closest, distance: minDist }
   }
 
+  function getBallHolderId() {
+    const tokens = currentFrame.value.tokens
+    const ball = tokens.find((t) => t.id === 'BALL')
+    if (!ball) return null
+    if (ball.holderId) return ball.holderId
+    const { player, distance } = findClosestPlayerToBall(tokens, ball)
+    if (player && distance <= 0.075) {
+      ball.holderId = player.id
+      return player.id
+    }
+    return null
+  }
+
+  function playerHasBall(tokenId) {
+    if (!tokenId || tokenId === 'BALL') return false
+    return getBallHolderId() === tokenId
+  }
+
   function updateTokenPosition(tokenId, x, y) {
     const tokens = currentFrame.value.tokens
     const token = tokens.find((t) => t.id === tokenId)
@@ -443,18 +461,7 @@ export const useBoardStore = defineStore('board', () => {
     }
 
     // Moving a player token: check if this player currently has possession of the ball
-    let hasBall = false
-    if (ball) {
-      if (ball.holderId) {
-        hasBall = ball.holderId === tokenId
-      } else {
-        const { player, distance } = findClosestPlayerToBall(tokens, ball)
-        if (player && player.id === tokenId && distance <= 0.075) {
-          hasBall = true
-          ball.holderId = tokenId
-        }
-      }
-    }
+    const hasBall = playerHasBall(tokenId)
 
     const nextX = Math.max(0.03, Math.min(0.97, x))
     const nextY = Math.max(0.03, Math.min(0.97, y))
@@ -476,10 +483,10 @@ export const useBoardStore = defineStore('board', () => {
   }
 
   function finalizeTokenDrop(tokenId) {
-    if (tokenId !== 'BALL') return
+    if (tokenId !== 'BALL') return null
     const tokens = currentFrame.value.tokens
     const ball = tokens.find((t) => t.id === 'BALL')
-    if (!ball) return
+    if (!ball) return null
 
     const { player, distance } = findClosestPlayerToBall(tokens, ball)
     if (player && distance <= 0.075) {
@@ -491,8 +498,10 @@ export const useBoardStore = defineStore('board', () => {
         ball.x = Math.max(0.02, Math.min(0.98, player.x + Math.cos(angle) * offsetDist))
         ball.y = Math.max(0.02, Math.min(0.98, player.y + Math.sin(angle) * offsetDist))
       }
+      return player
     } else {
       ball.holderId = null
+      return null
     }
   }
 
@@ -787,6 +796,8 @@ export const useBoardStore = defineStore('board', () => {
     undoStroke,
     redoStroke,
     clearCurrentStrokes,
+    getBallHolderId,
+    playerHasBall,
     updateTokenPosition,
     finalizeTokenDrop,
     addFrame,
