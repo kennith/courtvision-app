@@ -453,13 +453,12 @@ function drawGhostPaths(ctx, w, h) {
 function drawTokens(ctx, w, h) {
   const tokens = boardStore.displayedTokens
   const tokenRadius = Math.max(15, Math.min(24, w * 0.027))
-  const rotated = boardStore.courtRotated
 
   tokens.forEach((tk) => {
     if (!boardStore.showDefense && tk.team === 'defense') return
 
-    const cx = (rotated ? 1 - tk.x : tk.x) * w
-    const cy = (rotated ? 1 - tk.y : tk.y) * h
+    const cx = tk.x * w
+    const cy = tk.y * h
 
     ctx.save()
 
@@ -553,9 +552,9 @@ function renderBoard() {
       cssH
     )
   }
-  ctx.restore()
 
   drawTokens(ctx, cssW, cssH)
+  ctx.restore()
   ctx.restore()
 }
 
