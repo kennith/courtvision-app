@@ -108,6 +108,16 @@ const formations = [
           </button>
         </div>
 
+        <button
+          type="button"
+          class="chip-btn"
+          :class="{ active: boardStore.courtRotated }"
+          title="Rotate the board 180 degrees"
+          @click="boardStore.rotateBoard()"
+        >
+          🔄 Rotate Board
+        </button>
+
         <div class="toggles-row">
           <label class="checkbox-label" for="toggle-defense">
             <input
@@ -249,9 +259,14 @@ const formations = [
   white-space: nowrap;
 }
 
-.chip-btn:hover {
+.chip-btn:hover,
+.chip-btn.active {
   border-color: var(--brand-color);
   color: #fff;
+}
+
+.chip-btn.active {
+  background-color: rgba(234, 88, 12, 0.18);
 }
 
 .court-display-row {

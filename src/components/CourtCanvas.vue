@@ -21,9 +21,12 @@ function getNormalizedCoords(event) {
   const canvas = canvasRef.value
   if (!canvas) return { x: 0.5, y: 0.5 }
   const rect = canvas.getBoundingClientRect()
-  const x = Math.max(0.01, Math.min(0.99, (event.clientX - rect.left) / rect.width))
-  const y = Math.max(0.01, Math.min(0.99, (event.clientY - rect.top) / rect.height))
-  return { x, y }
+  const rawX = Math.max(0.01, Math.min(0.99, (event.clientX - rect.left) / rect.width))
+  const rawY = Math.max(0.01, Math.min(0.99, (event.clientY - rect.top) / rect.height))
+  if (boardStore.courtRotated) {
+    return { x: 1 - rawX, y: 1 - rawY }
+  }
+  return { x: rawX, y: rawY }
 }
 
 function findHitToken(normX, normY) {
@@ -450,12 +453,13 @@ function drawGhostPaths(ctx, w, h) {
 function drawTokens(ctx, w, h) {
   const tokens = boardStore.displayedTokens
   const tokenRadius = Math.max(15, Math.min(24, w * 0.027))
+  const rotated = boardStore.courtRotated
 
   tokens.forEach((tk) => {
     if (!boardStore.showDefense && tk.team === 'defense') return
 
-    const cx = tk.x * w
-    const cy = tk.y * h
+    const cx = (rotated ? 1 - tk.x : tk.x) * w
+    const cy = (rotated ? 1 - tk.y : tk.y) * h
 
     ctx.save()
 
@@ -522,6 +526,13 @@ function renderBoard() {
   ctx.save()
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
+  ctx.save()
+  if (boardStore.courtRotated) {
+    ctx.translate(cssW / 2, cssH / 2)
+    ctx.rotate(Math.PI)
+    ctx.translate(-cssW / 2, -cssH / 2)
+  }
+
   drawCourtMarkings(ctx, cssW, cssH)
   drawGhostPaths(ctx, cssW, cssH)
 
@@ -542,6 +553,7 @@ function renderBoard() {
       cssH
     )
   }
+  ctx.restore()
 
   drawTokens(ctx, cssW, cssH)
   ctx.restore()
@@ -609,6 +621,7 @@ watch(
   () => [
     boardStore.currentFrameIndex,
     boardStore.courtMode,
+    boardStore.courtRotated,
     boardStore.showDefense,
     boardStore.showPlayerRoles,
     boardStore.currentFrame.strokes.length,

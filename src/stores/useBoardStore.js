@@ -282,6 +282,7 @@ export const useBoardStore = defineStore('board', () => {
   const playTitle = ref('Untitled Play')
   const playCategory = ref('Offense')
   const courtMode = ref('half') // 'half' | 'full'
+  const courtRotated = ref(false)
   const showDefense = ref(true)
   const showPlayerRoles = ref(true)
 
@@ -560,6 +561,10 @@ export const useBoardStore = defineStore('board', () => {
     }
   }
 
+  function rotateBoard() {
+    courtRotated.value = !courtRotated.value
+  }
+
   function setCourtMode(mode) {
     if (courtMode.value === mode) return
     courtMode.value = mode
@@ -681,6 +686,7 @@ export const useBoardStore = defineStore('board', () => {
     playTitle,
     playCategory,
     courtMode,
+    courtRotated,
     showDefense,
     showPlayerRoles,
     activeTool,
@@ -707,6 +713,7 @@ export const useBoardStore = defineStore('board', () => {
     deleteFrame,
     selectFrame,
     applyFormation,
+    rotateBoard,
     setCourtMode,
     resetNewPlay,
     saveCurrentPlay,
