@@ -159,7 +159,112 @@ function onPointerUp(event) {
   }
 }
 
-// Drawing helpers (Whiteboard court only)
+/**
+ * Draws one regulation 50ft x 47ft half-court end using a uniform scale `s` (pixels per foot).
+ * Local coordinate system:
+ *   Origin (0, 0) = midpoint of the baseline
+ *   x in [-25*s, +25*s] = sideline to sideline (50 ft)
+ *   y in [0, 47*s]      = baseline to midcourt line (47 ft)
+ */
+function drawRegulationHalfCourtEnd(ctx, s, lineColor, paintFill) {
+  // 1. Half-court outer boundary (50 ft wide x 47 ft long)
+  ctx.strokeRect(-25 * s, 0, 50 * s, 47 * s)
+
+  // 2. Outer Key / Paint (16 ft wide x 19 ft long from baseline)
+  ctx.fillStyle = paintFill
+  ctx.fillRect(-8 * s, 0, 16 * s, 19 * s)
+  ctx.strokeRect(-8 * s, 0, 16 * s, 19 * s)
+
+  // 3. Low Blocks & Key Rebound Hash Marks along outer lane lines (x = +/- 8 ft)
+  ctx.fillStyle = lineColor
+  // Low blocks: 7 ft to 8 ft from baseline, 0.85 ft wide outside the key
+  ctx.fillRect(-8.85 * s, 7 * s, 0.85 * s, 1 * s)
+  ctx.fillRect(8 * s, 7 * s, 0.85 * s, 1 * s)
+
+  // Lane hash ticks at 11 ft, 14 ft, and 17 ft from baseline
+  const hashFt = [11, 14, 17]
+  ctx.beginPath()
+  hashFt.forEach((yFt) => {
+    ctx.moveTo(-8 * s, yFt * s)
+    ctx.lineTo(-8.85 * s, yFt * s)
+    ctx.moveTo(8 * s, yFt * s)
+    ctx.lineTo(8.85 * s, yFt * s)
+  })
+  ctx.stroke()
+
+  // 4. Free-Throw Circle (centered at (0, 19 ft), radius = 6 ft)
+  // Top half (toward midcourt): solid semicircle
+  ctx.beginPath()
+  ctx.arc(0, 19 * s, 6 * s, 0, Math.PI, false)
+  ctx.stroke()
+
+  // Bottom half (inside key): dashed semicircle
+  ctx.save()
+  ctx.setLineDash([5, 5])
+  ctx.beginPath()
+  ctx.arc(0, 19 * s, 6 * s, Math.PI, Math.PI * 2, false)
+  ctx.stroke()
+  ctx.restore()
+
+  // 5. 3-Point Line (Rim center at 5.25 ft, arc radius = 23.75 ft, corner lines at +/- 22 ft)
+  const rimY = 5.25 * s
+  const threeRadius = 23.75 * s
+  const cornerX = 22 * s
+  const dy = Math.sqrt(threeRadius * threeRadius - cornerX * cornerX)
+  const cornerBreakY = rimY + dy
+  const startAngle = Math.atan2(dy, -cornerX)
+  const endAngle = Math.atan2(dy, cornerX)
+
+  ctx.beginPath()
+  ctx.moveTo(-cornerX, 0)
+  ctx.lineTo(-cornerX, cornerBreakY)
+  ctx.arc(0, rimY, threeRadius, startAngle, endAngle, true)
+  ctx.lineTo(cornerX, 0)
+  ctx.stroke()
+
+  // 6. Restricted Area Arc (4 ft radius from rim center, with straight extensions to backboard at 4 ft)
+  ctx.beginPath()
+  ctx.moveTo(-4 * s, 4 * s)
+  ctx.lineTo(-4 * s, rimY)
+  ctx.arc(0, rimY, 4 * s, Math.PI, 0, true)
+  ctx.lineTo(4 * s, 4 * s)
+  ctx.stroke()
+
+  // 7. Backboard (6 ft wide, 4 ft inside baseline) & Rim (1.5 ft diameter centered at 5.25 ft)
+  ctx.beginPath()
+  ctx.moveTo(-3 * s, 4 * s)
+  ctx.lineTo(3 * s, 4 * s)
+  // Rim mounting neck
+  ctx.moveTo(0, 4 * s)
+  ctx.lineTo(0, 4.5 * s)
+  ctx.stroke()
+
+  ctx.save()
+  ctx.strokeStyle = '#ea580c'
+  ctx.lineWidth = Math.max(2.5, 0.22 * s)
+  ctx.beginPath()
+  ctx.arc(0, rimY, 0.75 * s, 0, Math.PI * 2)
+  ctx.stroke()
+  ctx.restore()
+
+  // 8. 28-ft Sideline Hash Marks (3 ft long inward from sidelines)
+  ctx.beginPath()
+  ctx.moveTo(-25 * s, 28 * s)
+  ctx.lineTo(-22 * s, 28 * s)
+  ctx.moveTo(25 * s, 28 * s)
+  ctx.lineTo(22 * s, 28 * s)
+  ctx.stroke()
+
+  // 9. Midcourt Center Circle Semicircles (outer 6 ft radius, inner 2 ft radius at y = 47 ft)
+  ctx.beginPath()
+  ctx.arc(0, 47 * s, 6 * s, Math.PI, Math.PI * 2, false)
+  ctx.stroke()
+
+  ctx.beginPath()
+  ctx.arc(0, 47 * s, 2 * s, Math.PI, Math.PI * 2, false)
+  ctx.stroke()
+}
+
 function drawCourtMarkings(ctx, w, h) {
   const mode = boardStore.courtMode
 
@@ -179,175 +284,43 @@ function drawCourtMarkings(ctx, w, h) {
 
   ctx.save()
   ctx.strokeStyle = lineColor
-  ctx.lineWidth = Math.max(2, w * 0.0032)
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
 
-  const pad = w * 0.04
-  const cw = w - pad * 2
-  const ch = h - pad * 2
-
-  // Outer boundary
-  ctx.strokeRect(pad, pad, cw, ch)
-
   if (mode === 'half') {
+    // Regulation Half Court: 50 ft wide x 47 ft long using a single uniform scale (pixels per foot)
+    const s = Math.min((w * 0.92) / 50, (h * 0.92) / 47)
+    const courtH = 47 * s
+    const topY = (h - courtH) / 2
     const cx = w / 2
-    const topY = pad
-    const bottomY = pad + ch
 
-    // Key / Paint
-    const keyW = cw * 0.32
-    const keyH = ch * 0.40
-    ctx.fillStyle = paintFill
-    ctx.fillRect(cx - keyW / 2, topY, keyW, keyH)
-    ctx.strokeRect(cx - keyW / 2, topY, keyW, keyH)
-
-    // Free throw circle
-    const ftRadius = keyW * 0.375
-    ctx.beginPath()
-    ctx.arc(cx, topY + keyH, ftRadius, 0, Math.PI, false)
-    ctx.stroke()
-
+    ctx.lineWidth = Math.max(2, 0.18 * s)
     ctx.save()
-    ctx.setLineDash([6, 6])
-    ctx.beginPath()
-    ctx.arc(cx, topY + keyH, ftRadius, Math.PI, Math.PI * 2, false)
-    ctx.stroke()
+    ctx.translate(cx, topY)
+    drawRegulationHalfCourtEnd(ctx, s, lineColor, paintFill)
     ctx.restore()
-
-    // Backboard & Rim
-    const backboardW = cw * 0.12
-    const backboardY = topY + ch * 0.055
-    ctx.beginPath()
-    ctx.moveTo(cx - backboardW / 2, backboardY)
-    ctx.lineTo(cx + backboardW / 2, backboardY)
-    ctx.stroke()
-
-    const rimRadius = cw * 0.02
-    const rimY = backboardY + rimRadius * 1.4
-    ctx.save()
-    ctx.strokeStyle = '#ea580c'
-    ctx.lineWidth = Math.max(2.5, w * 0.004)
-    ctx.beginPath()
-    ctx.arc(cx, rimY, rimRadius, 0, Math.PI * 2)
-    ctx.stroke()
-    ctx.restore()
-
-    // Restricted area arc
-    ctx.beginPath()
-    ctx.arc(cx, rimY, cw * 0.08, 0, Math.PI, false)
-    ctx.stroke()
-
-    // Regulation-proportioned 3-Point Line
-    const threeRadius = Math.min(cw * 0.44, ch * 0.56)
-    const cornerXOffset = threeRadius * (22 / 23.75)
-    const dy = Math.sqrt(threeRadius * threeRadius - cornerXOffset * cornerXOffset)
-    const cornerBreakY = rimY + dy
-    const startAngle = Math.atan2(dy, -cornerXOffset)
-    const endAngle = Math.atan2(dy, cornerXOffset)
-
-    ctx.beginPath()
-    ctx.moveTo(cx - cornerXOffset, topY)
-    ctx.lineTo(cx - cornerXOffset, cornerBreakY)
-    ctx.arc(cx, rimY, threeRadius, startAngle, endAngle, true)
-    ctx.lineTo(cx + cornerXOffset, topY)
-    ctx.stroke()
-
-    // Half-court center circle at bottom
-    ctx.beginPath()
-    ctx.arc(cx, bottomY, cw * 0.12, Math.PI, Math.PI * 2)
-    ctx.stroke()
   } else {
-    // Full Court (Horizontal: Left basket and Right basket)
-    const leftX = pad
-    const rightX = pad + cw
-    const midX = w / 2
+    // Regulation Full Court: 94 ft long x 50 ft wide using a single uniform scale (pixels per foot)
+    const s = Math.min((w * 0.94) / 94, (h * 0.92) / 50)
+    const courtW = 94 * s
+    const leftX = (w - courtW) / 2
+    const rightX = leftX + courtW
     const midY = h / 2
 
-    // Center line & circle
-    ctx.beginPath()
-    ctx.moveTo(midX, pad)
-    ctx.lineTo(midX, pad + ch)
-    ctx.stroke()
+    ctx.lineWidth = Math.max(2, 0.18 * s)
 
-    ctx.beginPath()
-    ctx.arc(midX, midY, ch * 0.18, 0, Math.PI * 2)
-    ctx.stroke()
-
-    const keyLength = cw * 0.19
-    const keyHeight = ch * 0.34
-    const threeRadius = ch * 0.43
-    const cornerYOffset = threeRadius * (22 / 23.75)
-    const dx = Math.sqrt(threeRadius * threeRadius - cornerYOffset * cornerYOffset)
-
-    // --- Left Court ---
-    ctx.fillStyle = paintFill
-    ctx.fillRect(leftX, midY - keyHeight / 2, keyLength, keyHeight)
-    ctx.strokeRect(leftX, midY - keyHeight / 2, keyLength, keyHeight)
-
-    ctx.beginPath()
-    ctx.arc(leftX + keyLength, midY, keyHeight * 0.36, -Math.PI / 2, Math.PI / 2)
-    ctx.stroke()
-
-    const leftBackboardX = leftX + cw * 0.032
-    const leftRimRadius = ch * 0.025
-    const leftRimX = leftBackboardX + leftRimRadius * 1.35
-
-    ctx.beginPath()
-    ctx.moveTo(leftBackboardX, midY - ch * 0.06)
-    ctx.lineTo(leftBackboardX, midY + ch * 0.06)
-    ctx.stroke()
-
-    const leftBreakX = leftRimX + dx
-    const leftStartAngle = Math.atan2(-cornerYOffset, dx)
-    const leftEndAngle = Math.atan2(cornerYOffset, dx)
-    ctx.beginPath()
-    ctx.moveTo(leftX, midY - cornerYOffset)
-    ctx.lineTo(leftBreakX, midY - cornerYOffset)
-    ctx.arc(leftRimX, midY, threeRadius, leftStartAngle, leftEndAngle, false)
-    ctx.lineTo(leftX, midY + cornerYOffset)
-    ctx.stroke()
-
+    // Left Half Court (baseline at leftX, facing right toward midcourt)
     ctx.save()
-    ctx.strokeStyle = '#ea580c'
-    ctx.beginPath()
-    ctx.arc(leftRimX, midY, leftRimRadius, 0, Math.PI * 2)
-    ctx.stroke()
+    ctx.translate(leftX, midY)
+    ctx.rotate(-Math.PI / 2)
+    drawRegulationHalfCourtEnd(ctx, s, lineColor, paintFill)
     ctx.restore()
 
-    // --- Right Court ---
-    ctx.fillStyle = paintFill
-    ctx.fillRect(rightX - keyLength, midY - keyHeight / 2, keyLength, keyHeight)
-    ctx.strokeRect(rightX - keyLength, midY - keyHeight / 2, keyLength, keyHeight)
-
-    ctx.beginPath()
-    ctx.arc(rightX - keyLength, midY, keyHeight * 0.36, Math.PI / 2, -Math.PI / 2)
-    ctx.stroke()
-
-    const rightBackboardX = rightX - cw * 0.032
-    const rightRimRadius = ch * 0.025
-    const rightRimX = rightBackboardX - rightRimRadius * 1.35
-
-    ctx.beginPath()
-    ctx.moveTo(rightBackboardX, midY - ch * 0.06)
-    ctx.lineTo(rightBackboardX, midY + ch * 0.06)
-    ctx.stroke()
-
-    const rightBreakX = rightRimX - dx
-    const rightStartAngle = Math.atan2(-cornerYOffset, -dx)
-    const rightEndAngle = Math.atan2(cornerYOffset, -dx)
-    ctx.beginPath()
-    ctx.moveTo(rightX, midY - cornerYOffset)
-    ctx.lineTo(rightBreakX, midY - cornerYOffset)
-    ctx.arc(rightRimX, midY, threeRadius, rightStartAngle, rightEndAngle, true)
-    ctx.lineTo(rightX, midY + cornerYOffset)
-    ctx.stroke()
-
+    // Right Half Court (baseline at rightX, facing left toward midcourt)
     ctx.save()
-    ctx.strokeStyle = '#ea580c'
-    ctx.beginPath()
-    ctx.arc(rightRimX, midY, rightRimRadius, 0, Math.PI * 2)
-    ctx.stroke()
+    ctx.translate(rightX, midY)
+    ctx.rotate(Math.PI / 2)
+    drawRegulationHalfCourtEnd(ctx, s, lineColor, paintFill)
     ctx.restore()
   }
 
@@ -720,8 +693,8 @@ onBeforeUnmount(() => {
 .court-canvas {
   inline-size: 100%;
   block-size: 100%;
-  max-inline-size: 1060px;
-  aspect-ratio: 4 / 3;
+  max-inline-size: 760px;
+  aspect-ratio: 50 / 47;
   border-radius: var(--radius-sm);
   touch-action: none;
   user-select: none;
@@ -730,6 +703,7 @@ onBeforeUnmount(() => {
 }
 
 .court-stage.full-court-aspect .court-canvas {
-  aspect-ratio: 16 / 9;
+  max-inline-size: 1060px;
+  aspect-ratio: 94 / 50;
 }
 </style>

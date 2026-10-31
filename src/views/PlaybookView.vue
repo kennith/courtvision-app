@@ -94,23 +94,37 @@ async function sharePlayCard(play) {
         <!-- Row 1: Card Header & Mini Tactical Diagram -->
         <div class="card-top">
           <div class="mini-court-preview">
-            <svg viewBox="0 0 200 150" class="mini-svg" aria-hidden="true">
-              <rect width="200" height="150" rx="4" fill="#f8fafc" />
-              <rect x="6" y="6" width="188" height="138" rx="2" fill="#f8fafc" stroke="#1e293b" stroke-width="1.5" />
-              <rect x="68" y="6" width="64" height="56" fill="rgba(37,99,235,0.07)" stroke="#1e293b" stroke-width="1.5" />
-              <path d="M 76 62 A 24 24 0 0 0 124 62" fill="none" stroke="#1e293b" stroke-width="1.5" />
-              <circle cx="100" cy="18" r="4" fill="none" stroke="#ea580c" stroke-width="1.5" />
-              <path d="M 26 6 L 26 48.4 A 80 80 0 0 0 174 48.4 L 174 6" fill="none" stroke="#1e293b" stroke-width="1.5" />
+            <svg viewBox="0 0 54 51" class="mini-svg" aria-hidden="true">
+              <rect width="54" height="51" rx="1.5" fill="#f8fafc" />
+              <!-- Outer 50ft x 47ft Half Court Boundary -->
+              <rect x="2" y="2" width="50" height="47" fill="#f8fafc" stroke="#1e293b" stroke-width="0.4" />
+              <!-- 16ft x 19ft Key / Paint -->
+              <rect x="19" y="2" width="16" height="19" fill="rgba(37,99,235,0.07)" stroke="#1e293b" stroke-width="0.4" />
+              <!-- Low Blocks & Lane Hash Marks -->
+              <rect x="18.15" y="9" width="0.85" height="1" fill="#1e293b" />
+              <rect x="35" y="9" width="0.85" height="1" fill="#1e293b" />
+              <path d="M 19 13 L 18.15 13 M 19 16 L 18.15 16 M 19 19 L 18.15 19 M 35 13 L 35.85 13 M 35 16 L 35.85 16 M 35 19 L 35.85 19" stroke="#1e293b" stroke-width="0.35" />
+              <!-- Free-Throw Circle (6ft radius) -->
+              <path d="M 21 21 A 6 6 0 0 0 33 21" fill="none" stroke="#1e293b" stroke-width="0.4" />
+              <path d="M 21 21 A 6 6 0 0 1 33 21" fill="none" stroke="#1e293b" stroke-width="0.35" stroke-dasharray="1 1" />
+              <!-- Restricted Area (4ft radius), Backboard (6ft wide at 4ft) & Rim (at 5.25ft) -->
+              <path d="M 23 6 L 23 7.25 A 4 4 0 0 0 31 7.25 L 31 6" fill="none" stroke="#1e293b" stroke-width="0.35" />
+              <path d="M 24 6 L 30 6 M 27 6 L 27 6.5" stroke="#1e293b" stroke-width="0.4" />
+              <circle cx="27" cy="7.25" r="0.75" fill="none" stroke="#ea580c" stroke-width="0.45" />
+              <!-- Regulation 3-Point Line (22ft corners, 23.75ft arc) -->
+              <path d="M 5 2 L 5 16.2 A 23.75 23.75 0 0 0 49 16.2 L 49 2" fill="none" stroke="#1e293b" stroke-width="0.4" />
+              <!-- Midcourt Center Circle (6ft & 2ft radii) -->
+              <path d="M 21 49 A 6 6 0 0 1 33 49 M 25 49 A 2 2 0 0 1 29 49" fill="none" stroke="#1e293b" stroke-width="0.4" />
               <!-- Render first frame tokens -->
               <g v-if="play.frames && play.frames[0]">
                 <template v-for="tk in play.frames[0].tokens" :key="tk.id">
                   <circle
-                    :cx="tk.x * 200"
-                    :cy="tk.y * 150"
-                    :r="tk.team === 'ball' ? 4 : 6.5"
+                    :cx="tk.x * 54"
+                    :cy="tk.y * 51"
+                    :r="tk.team === 'ball' ? 1.2 : 1.85"
                     :fill="tk.team === 'offense' ? '#2563eb' : tk.team === 'defense' ? '#dc2626' : '#ea580c'"
                     stroke="#ffffff"
-                    stroke-width="1"
+                    stroke-width="0.3"
                   />
                 </template>
               </g>
