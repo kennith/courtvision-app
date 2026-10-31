@@ -538,6 +538,7 @@ export const useBoardStore = defineStore('board', () => {
 
   function applyFormation(presetName) {
     isPlaying.value = false
+    clearCurrentStrokes()
     const tokens = currentFrame.value.tokens
     const setCoords = (map) => {
       tokens.forEach((tk) => {
