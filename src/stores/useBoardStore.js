@@ -371,11 +371,26 @@ export const useBoardStore = defineStore('board', () => {
     return frames.value[idx].strokes
   })
 
+  const MOVEMENT_TOOLS = new Set(['arrow', 'pass', 'dribble', 'screen'])
+
+  function fadeMovementStrokes(delta) {
+    currentFrame.value.strokes.forEach((s) => {
+      if (MOVEMENT_TOOLS.has(s.tool)) {
+        const currentOpacity = typeof s.opacity === 'number' ? s.opacity : 1
+        s.opacity = Math.max(0.1, Math.min(1, Number((currentOpacity + delta).toFixed(2))))
+      }
+    })
+  }
+
   function addStroke(stroke) {
+    if (MOVEMENT_TOOLS.has(stroke.tool)) {
+      fadeMovementStrokes(-0.1)
+    }
     currentFrame.value.strokes.push({
       ...stroke,
       color: BLACK_INK,
-      width: 5
+      width: 5,
+      opacity: 1
     })
     if (!redoStacks.value[currentFrameIndex.value]) {
       redoStacks.value[currentFrameIndex.value] = []
@@ -394,6 +409,9 @@ export const useBoardStore = defineStore('board', () => {
     const strokes = currentFrame.value.strokes
     if (strokes.length === 0) return
     const popped = strokes.pop()
+    if (MOVEMENT_TOOLS.has(popped.tool)) {
+      fadeMovementStrokes(0.1)
+    }
     if (!redoStacks.value[currentFrameIndex.value]) {
       redoStacks.value[currentFrameIndex.value] = []
     }
@@ -404,6 +422,10 @@ export const useBoardStore = defineStore('board', () => {
     const stack = redoStacks.value[currentFrameIndex.value]
     if (!stack || stack.length === 0) return
     const restored = stack.pop()
+    if (MOVEMENT_TOOLS.has(restored.tool)) {
+      fadeMovementStrokes(-0.1)
+      restored.opacity = 1
+    }
     currentFrame.value.strokes.push(restored)
   }
 

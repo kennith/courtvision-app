@@ -506,6 +506,7 @@ function drawSingleStroke(ctx, stroke, w, h) {
   if (!pts || pts.length < 2) return
 
   ctx.save()
+  ctx.globalAlpha = typeof stroke.opacity === 'number' ? stroke.opacity : 1
   ctx.strokeStyle = '#0f172a'
   ctx.fillStyle = '#0f172a'
   ctx.lineWidth = stroke.width * (w / 700)
@@ -801,7 +802,7 @@ watch(
     boardStore.courtRotated,
     boardStore.showDefense,
     boardStore.showPlayerRoles,
-    boardStore.currentFrame.strokes.length,
+    boardStore.currentFrame.strokes,
     boardStore.currentFrame.tokens
   ],
   () => {
