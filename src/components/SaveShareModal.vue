@@ -72,7 +72,7 @@ function openShareModal() {
   shareJsonText.value = serialized
   try {
     const encoded = encodeURIComponent(btoa(unescape(encodeURIComponent(serialized))))
-    shareLinkText.value = `${window.location.origin}${window.location.pathname}?play=${encoded}`
+    shareLinkText.value = `${window.location.origin}${import.meta.env.BASE_URL}?play=${encoded}`
   } catch {
     shareLinkText.value = window.location.href
   }

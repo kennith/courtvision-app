@@ -40,7 +40,7 @@ async function sharePlayCard(play) {
       frames: play.frames
     })
     const encoded = encodeURIComponent(btoa(unescape(encodeURIComponent(serialized))))
-    const url = `${window.location.origin}/?play=${encoded}`
+    const url = `${window.location.origin}${import.meta.env.BASE_URL}?play=${encoded}`
     await navigator.clipboard.writeText(url)
     copiedPlayId.value = play.id
     setTimeout(() => {

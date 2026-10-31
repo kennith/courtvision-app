@@ -19,6 +19,7 @@
    - [Persistence, Sharing & Export Terminology](#8-persistence-sharing--export-terminology)
 4. [Store State & API Reference (`useBoardStore`)](#store-state--api-reference-useboardstore)
 5. [Getting Started & Scripts](#getting-started--scripts)
+6. [Deploying to GitHub Pages](#deploying-to-github-pages)
 
 ---
 
@@ -264,3 +265,21 @@ npm run build
 # Preview production build locally
 npm run preview
 ```
+
+---
+
+## Deploying to GitHub Pages
+
+The repository is pre-configured for **GitHub Pages** deployment via:
+- **[`vite.config.js`](vite.config.js)**:
+  - Dynamically resolves the `base` path (`/` during `npm run dev`, `/${repo}/` in GitHub Actions via `GITHUB_REPOSITORY`, or `/courtvision-app/` by default on local builds; overridable via `BASE_URL`).
+  - Automatically generates `dist/404.html`, `dist/playbook/index.html`, and `dist/.nojekyll` during `npm run build` so Vue Router (`createWebHistory`) routes work cleanly on direct page loads and refreshes.
+- **[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)**:
+  - GitHub Actions workflow that builds and deploys `./dist` to GitHub Pages automatically on every push to `main`.
+
+### Steps to Publish on GitHub
+1. Push this repository to GitHub (on the `main` branch).
+2. In your GitHub repository, navigate to **Settings → Pages**.
+3. Under **Build and deployment → Source**, select **GitHub Actions**.
+4. The **Deploy to GitHub Pages** workflow will run automatically and publish your site at `https://<username>.github.io/<repo-name>/`.
+
