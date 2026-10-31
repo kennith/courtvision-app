@@ -16,6 +16,7 @@ const draggingTokenId = ref(null)
 const dragAutoTool = ref(null) // 'dribble' | 'arrow' | 'screen' | 'pass' | null
 const dragTrailPoints = ref([])
 const dragStartHolderId = ref(null)
+const dragStartTokens = ref(null)
 const isDrawing = ref(false)
 const activeStrokePoints = ref([])
 
@@ -140,6 +141,7 @@ function onPointerDown(event) {
   const hitToken = findHitToken(x, y)
   if (hitToken && (boardStore.activeTool === 'select' || event.button === 0)) {
     draggingTokenId.value = hitToken.id
+    dragStartTokens.value = JSON.parse(JSON.stringify(boardStore.currentFrame.tokens))
     if (hitToken.id === 'BALL') {
       dragStartHolderId.value = boardStore.getBallHolderId()
       dragAutoTool.value = 'pass'
@@ -238,6 +240,7 @@ function onPointerUp(event) {
     const tokenId = draggingTokenId.value
     const movedToken = boardStore.currentFrame.tokens.find((t) => t.id === tokenId)
     const receiver = boardStore.finalizeTokenDrop(tokenId)
+    const tokensAfterMove = JSON.parse(JSON.stringify(boardStore.currentFrame.tokens))
 
     if (
       (dragAutoTool.value === 'dribble' ||
@@ -251,7 +254,10 @@ function onPointerUp(event) {
       }
       const trimmed = getTrimmedTrailPoints(dragTrailPoints.value, movedToken, 0.038)
       if (trimmed.length >= 2) {
-        boardStore.addStroke({
+        if (dragStartTokens.value) {
+          boardStore.setCurrentTokens(dragStartTokens.value)
+        }
+        boardStore.addMovementStep(tokensAfterMove, {
           id: `st-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           tool: dragAutoTool.value,
           color: '#0f172a',
@@ -274,7 +280,10 @@ function onPointerUp(event) {
           x: receiver.x - (dx / dist) * 0.038,
           y: receiver.y - (dy / dist) * 0.038
         }
-        boardStore.addStroke({
+        if (dragStartTokens.value) {
+          boardStore.setCurrentTokens(dragStartTokens.value)
+        }
+        boardStore.addMovementStep(tokensAfterMove, {
           id: `st-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           tool: 'pass',
           color: '#0f172a',
@@ -288,6 +297,7 @@ function onPointerUp(event) {
     dragAutoTool.value = null
     dragTrailPoints.value = []
     dragStartHolderId.value = null
+    dragStartTokens.value = null
     renderBoard()
     return
   }
@@ -295,13 +305,19 @@ function onPointerUp(event) {
   if (isDrawing.value) {
     isDrawing.value = false
     if (boardStore.activeTool !== 'eraser' && activeStrokePoints.value.length >= 2) {
-      boardStore.addStroke({
+      const tool = boardStore.activeTool
+      const strokeObj = {
         id: `st-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        tool: boardStore.activeTool,
+        tool,
         color: '#0f172a',
         width: boardStore.markerWidth,
         points: [...activeStrokePoints.value]
-      })
+      }
+      if (tool === 'arrow' || tool === 'pass' || tool === 'dribble' || tool === 'screen') {
+        boardStore.addMovementStep(boardStore.currentFrame.tokens, strokeObj)
+      } else {
+        boardStore.addStroke(strokeObj)
+      }
     }
     activeStrokePoints.value = []
     renderBoard()

@@ -367,8 +367,14 @@ export const useBoardStore = defineStore('board', () => {
     if (!isPlaying.value || frames.value.length < 2) {
       return currentFrame.value.strokes
     }
-    const idx = Math.min(frames.value.length - 1, Math.floor(animationProgress.value))
-    return frames.value[idx].strokes
+    const totalTransitions = frames.value.length - 1
+    const clamped = Math.max(0, Math.min(totalTransitions, animationProgress.value))
+    const fromIdx = Math.min(Math.floor(clamped), totalTransitions - 1)
+    const toIdx = fromIdx + 1
+    if (frames.value[toIdx]?.strokes?.length) {
+      return frames.value[toIdx].strokes
+    }
+    return frames.value[fromIdx].strokes
   })
 
   function addStroke(stroke) {
@@ -517,6 +523,34 @@ export const useBoardStore = defineStore('board', () => {
     frames.value.splice(currentFrameIndex.value + 1, 0, newFrame)
     redoStacks.value.splice(currentFrameIndex.value + 1, 0, [])
     currentFrameIndex.value += 1
+    animationProgress.value = currentFrameIndex.value
+  }
+
+  function setCurrentTokens(tokens) {
+    if (!tokens) return
+    currentFrame.value.tokens = cloneDeep(tokens)
+  }
+
+  function addMovementStep(nextTokens, stroke) {
+    const baseStrokes = cloneDeep(currentFrame.value.strokes)
+    if (stroke) {
+      baseStrokes.push({
+        ...stroke,
+        color: BLACK_INK,
+        width: 5
+      })
+    }
+    const nextNumber = frames.value.length + 1
+    const newFrame = {
+      id: `frame-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      name: `${nextNumber}. Step ${nextNumber}`,
+      tokens: cloneDeep(nextTokens),
+      strokes: baseStrokes
+    }
+    frames.value.splice(currentFrameIndex.value + 1, 0, newFrame)
+    redoStacks.value.splice(currentFrameIndex.value + 1, 0, [])
+    currentFrameIndex.value += 1
+    animationProgress.value = currentFrameIndex.value
   }
 
   function deleteFrame(index) {
@@ -801,6 +835,8 @@ export const useBoardStore = defineStore('board', () => {
     updateTokenPosition,
     finalizeTokenDrop,
     addFrame,
+    setCurrentTokens,
+    addMovementStep,
     deleteFrame,
     selectFrame,
     applyFormation,
