@@ -108,17 +108,16 @@ const formations = [
           </button>
         </div>
 
-        <button
-          type="button"
-          class="chip-btn"
-          :class="{ active: boardStore.courtRotated }"
-          title="Rotate the board 180 degrees"
-          @click="boardStore.rotateBoard()"
-        >
-          🔄 Rotate Board
-        </button>
-
         <div class="toggles-row">
+          <label class="checkbox-label" for="toggle-rotate-board">
+            <input
+              id="toggle-rotate-board"
+              v-model="boardStore.courtRotated"
+              type="checkbox"
+              class="visually-hidden"
+            />
+            <span>Rotate Board</span>
+          </label>
           <label class="checkbox-label" for="toggle-defense">
             <input
               id="toggle-defense"
