@@ -33,7 +33,7 @@ function findHitToken(normX, normY) {
   const canvas = canvasRef.value
   if (!canvas) return null
   const rect = canvas.getBoundingClientRect()
-  const hitRadiusPx = 24
+  const hitRadiusPx = rect.width * 0.05
   const tokens = boardStore.displayedTokens
   for (let i = tokens.length - 1; i >= 0; i--) {
     const tk = tokens[i]
@@ -452,7 +452,7 @@ function drawGhostPaths(ctx, w, h) {
 
 function drawTokens(ctx, w, h) {
   const tokens = boardStore.displayedTokens
-  const tokenRadius = Math.max(15, Math.min(24, w * 0.027))
+  const tokenRadius = w * 0.05
 
   tokens.forEach((tk) => {
     if (!boardStore.showDefense && tk.team === 'defense') return
@@ -503,9 +503,9 @@ function drawTokens(ctx, w, h) {
     ctx.fillText(tk.label, cx, cy)
 
     if (boardStore.showPlayerRoles && tk.role) {
-      ctx.font = `600 ${Math.round(tokenRadius * 0.52)}px Inter, sans-serif`
+      ctx.font = `600 ${Math.round(tokenRadius * 0.45)}px Inter, sans-serif`
       ctx.fillStyle = '#0f172a'
-      ctx.fillText(tk.role, cx, cy + tokenRadius + 10)
+      ctx.fillText(tk.role, cx, cy + tokenRadius + Math.round(tokenRadius * 0.38))
     }
 
     ctx.restore()
