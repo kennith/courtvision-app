@@ -438,8 +438,7 @@ export const useBoardStore = defineStore('board', () => {
     let closest = null
     let minDist = Infinity
     tokens.forEach((tk) => {
-      if (tk.team === 'ball') return
-      if (!showDefense.value && tk.team === 'defense') return
+      if (tk.team !== 'offense') return
       const d = Math.hypot(tk.x - ball.x, tk.y - ball.y)
       if (d < minDist) {
         minDist = d
@@ -497,8 +496,12 @@ export const useBoardStore = defineStore('board', () => {
       if (hasBall) {
         ball.x = Math.max(0.02, Math.min(0.98, ball.x + dx))
         ball.y = Math.max(0.02, Math.min(0.98, ball.y + dy))
-      } else if (!ball.holderId && Math.hypot(ball.x - nextX, ball.y - nextY) <= 0.055) {
-        // Player moved onto a loose ball and picks it up
+      } else if (
+        token.team === 'offense' &&
+        !ball.holderId &&
+        Math.hypot(ball.x - nextX, ball.y - nextY) <= 0.055
+      ) {
+        // Offensive player moved onto a loose ball and picks it up
         ball.holderId = tokenId
       }
     }

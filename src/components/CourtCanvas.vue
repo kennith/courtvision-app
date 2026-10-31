@@ -144,14 +144,18 @@ function onPointerDown(event) {
       dragStartHolderId.value = boardStore.getBallHolderId()
       dragAutoTool.value = 'pass'
       dragTrailPoints.value = [{ x: hitToken.x, y: hitToken.y }]
-    } else if (boardStore.playerHasBall(hitToken.id)) {
+    } else if (hitToken.team === 'offense' && boardStore.playerHasBall(hitToken.id)) {
       dragStartHolderId.value = hitToken.id
       dragAutoTool.value = 'dribble'
       dragTrailPoints.value = [{ x: hitToken.x, y: hitToken.y }]
-    } else {
+    } else if (hitToken.team === 'offense') {
       dragStartHolderId.value = null
       dragAutoTool.value = 'arrow'
       dragTrailPoints.value = [{ x: hitToken.x, y: hitToken.y }]
+    } else {
+      dragStartHolderId.value = null
+      dragAutoTool.value = null
+      dragTrailPoints.value = []
     }
     renderBoard()
     return
