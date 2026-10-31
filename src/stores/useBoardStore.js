@@ -412,11 +412,87 @@ export const useBoardStore = defineStore('board', () => {
     redoStacks.value[currentFrameIndex.value] = []
   }
 
+  function findClosestPlayerToBall(tokens, ball) {
+    let closest = null
+    let minDist = Infinity
+    tokens.forEach((tk) => {
+      if (tk.team === 'ball') return
+      if (!showDefense.value && tk.team === 'defense') return
+      const d = Math.hypot(tk.x - ball.x, tk.y - ball.y)
+      if (d < minDist) {
+        minDist = d
+        closest = tk
+      }
+    })
+    return { player: closest, distance: minDist }
+  }
+
   function updateTokenPosition(tokenId, x, y) {
-    const token = currentFrame.value.tokens.find((t) => t.id === tokenId)
-    if (token) {
-      token.x = Math.max(0.03, Math.min(0.97, x))
-      token.y = Math.max(0.03, Math.min(0.97, y))
+    const tokens = currentFrame.value.tokens
+    const token = tokens.find((t) => t.id === tokenId)
+    if (!token) return
+
+    const ball = tokens.find((t) => t.id === 'BALL')
+
+    if (tokenId === 'BALL') {
+      token.x = Math.max(0.02, Math.min(0.98, x))
+      token.y = Math.max(0.02, Math.min(0.98, y))
+      const { player, distance } = findClosestPlayerToBall(tokens, token)
+      token.holderId = player && distance <= 0.075 ? player.id : null
+      return
+    }
+
+    // Moving a player token: check if this player currently has possession of the ball
+    let hasBall = false
+    if (ball) {
+      if (ball.holderId) {
+        hasBall = ball.holderId === tokenId
+      } else {
+        const { player, distance } = findClosestPlayerToBall(tokens, ball)
+        if (player && player.id === tokenId && distance <= 0.075) {
+          hasBall = true
+          ball.holderId = tokenId
+        }
+      }
+    }
+
+    const nextX = Math.max(0.03, Math.min(0.97, x))
+    const nextY = Math.max(0.03, Math.min(0.97, y))
+    const dx = nextX - token.x
+    const dy = nextY - token.y
+
+    token.x = nextX
+    token.y = nextY
+
+    if (ball) {
+      if (hasBall) {
+        ball.x = Math.max(0.02, Math.min(0.98, ball.x + dx))
+        ball.y = Math.max(0.02, Math.min(0.98, ball.y + dy))
+      } else if (!ball.holderId && Math.hypot(ball.x - nextX, ball.y - nextY) <= 0.055) {
+        // Player moved onto a loose ball and picks it up
+        ball.holderId = tokenId
+      }
+    }
+  }
+
+  function finalizeTokenDrop(tokenId) {
+    if (tokenId !== 'BALL') return
+    const tokens = currentFrame.value.tokens
+    const ball = tokens.find((t) => t.id === 'BALL')
+    if (!ball) return
+
+    const { player, distance } = findClosestPlayerToBall(tokens, ball)
+    if (player && distance <= 0.075) {
+      ball.holderId = player.id
+      // If dropped directly over the player's center, tuck the ball onto the player's side so both remain visible and clickable
+      if (distance < 0.034) {
+        const angle = distance > 0.002 ? Math.atan2(ball.y - player.y, ball.x - player.x) : -0.4
+        const offsetDist = 0.04
+        ball.x = Math.max(0.02, Math.min(0.98, player.x + Math.cos(angle) * offsetDist))
+        ball.y = Math.max(0.02, Math.min(0.98, player.y + Math.sin(angle) * offsetDist))
+      }
+    } else {
+      ball.holderId = null
     }
   }
 
@@ -459,6 +535,9 @@ export const useBoardStore = defineStore('board', () => {
         if (map[tk.id]) {
           tk.x = map[tk.id].x
           tk.y = map[tk.id].y
+          if (tk.id === 'BALL') {
+            tk.holderId = 'O1'
+          }
         }
       })
     }
@@ -709,6 +788,7 @@ export const useBoardStore = defineStore('board', () => {
     redoStroke,
     clearCurrentStrokes,
     updateTokenPosition,
+    finalizeTokenDrop,
     addFrame,
     deleteFrame,
     selectFrame,

@@ -33,18 +33,26 @@ function findHitToken(normX, normY) {
   const canvas = canvasRef.value
   if (!canvas) return null
   const rect = canvas.getBoundingClientRect()
-  const hitRadiusPx = rect.width * 0.035
+  const playerRadiusPx = rect.width * 0.035
+  const ballRadiusPx = playerRadiusPx * 0.72
   const tokens = boardStore.displayedTokens
+
+  let bestToken = null
+  let bestDist = Infinity
+
   for (let i = tokens.length - 1; i >= 0; i--) {
     const tk = tokens[i]
     if (!boardStore.showDefense && tk.team === 'defense') continue
+    const radiusPx = tk.team === 'ball' ? ballRadiusPx : playerRadiusPx
     const dx = (tk.x - normX) * rect.width
     const dy = (tk.y - normY) * rect.height
-    if (Math.hypot(dx, dy) <= hitRadiusPx) {
-      return tk
+    const dist = Math.hypot(dx, dy)
+    if (dist <= radiusPx && dist < bestDist) {
+      bestDist = dist
+      bestToken = tk
     }
   }
-  return null
+  return bestToken
 }
 
 function eraseStrokesNear(normX, normY) {
@@ -141,6 +149,7 @@ function onPointerUp(event) {
   }
 
   if (draggingTokenId.value) {
+    boardStore.finalizeTokenDrop(draggingTokenId.value)
     draggingTokenId.value = null
     renderBoard()
     return
