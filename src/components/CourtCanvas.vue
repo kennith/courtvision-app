@@ -13,7 +13,7 @@ let lastTimestamp = 0
 
 // Interaction state
 const draggingTokenId = ref(null)
-const dragAutoTool = ref(null) // 'dribble' | 'pass' | null
+const dragAutoTool = ref(null) // 'dribble' | 'arrow' | 'pass' | null
 const dragTrailPoints = ref([])
 const dragStartHolderId = ref(null)
 const isDrawing = ref(false)
@@ -130,8 +130,8 @@ function onPointerDown(event) {
       dragTrailPoints.value = [{ x: hitToken.x, y: hitToken.y }]
     } else {
       dragStartHolderId.value = null
-      dragAutoTool.value = null
-      dragTrailPoints.value = []
+      dragAutoTool.value = 'arrow'
+      dragTrailPoints.value = [{ x: hitToken.x, y: hitToken.y }]
     }
     renderBoard()
     return
@@ -160,7 +160,10 @@ function onPointerMove(event) {
     const movedToken = boardStore.currentFrame.tokens.find(
       (t) => t.id === draggingTokenId.value
     )
-    if (movedToken && dragAutoTool.value === 'dribble') {
+    if (
+      movedToken &&
+      (dragAutoTool.value === 'dribble' || dragAutoTool.value === 'arrow')
+    ) {
       const lastPt = dragTrailPoints.value[dragTrailPoints.value.length - 1]
       if (lastPt && Math.hypot(movedToken.x - lastPt.x, movedToken.y - lastPt.y) > 0.005) {
         dragTrailPoints.value.push({ x: movedToken.x, y: movedToken.y })
@@ -211,12 +214,16 @@ function onPointerUp(event) {
     const movedToken = boardStore.currentFrame.tokens.find((t) => t.id === tokenId)
     const receiver = boardStore.finalizeTokenDrop(tokenId)
 
-    if (dragAutoTool.value === 'dribble' && movedToken && dragTrailPoints.value.length >= 2) {
+    if (
+      (dragAutoTool.value === 'dribble' || dragAutoTool.value === 'arrow') &&
+      movedToken &&
+      dragTrailPoints.value.length >= 2
+    ) {
       const trimmed = getTrimmedTrailPoints(dragTrailPoints.value, movedToken, 0.038)
       if (trimmed.length >= 2) {
         boardStore.addStroke({
           id: `st-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          tool: 'dribble',
+          tool: dragAutoTool.value,
           color: '#0f172a',
           width: boardStore.markerWidth,
           points: trimmed
@@ -653,7 +660,7 @@ function renderBoard() {
       (t) => t.id === draggingTokenId.value
     )
     const previewPoints =
-      dragAutoTool.value === 'dribble' && movedToken
+      (dragAutoTool.value === 'dribble' || dragAutoTool.value === 'arrow') && movedToken
         ? getTrimmedTrailPoints(dragTrailPoints.value, movedToken, 0.038)
         : dragTrailPoints.value
     if (previewPoints.length >= 2) {
