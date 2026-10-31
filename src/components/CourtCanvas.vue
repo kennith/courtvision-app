@@ -13,7 +13,7 @@ let lastTimestamp = 0
 
 // Interaction state
 const draggingTokenId = ref(null)
-const dragAutoTool = ref(null) // 'dribble' | 'arrow' | 'pass' | null
+const dragAutoTool = ref(null) // 'dribble' | 'arrow' | 'screen' | 'pass' | null
 const dragTrailPoints = ref([])
 const dragStartHolderId = ref(null)
 const isDrawing = ref(false)
@@ -84,6 +84,26 @@ function findHitToken(normX, normY) {
     }
   }
   return bestToken
+}
+
+function isTouchingDefender(token) {
+  if (!token || token.team === 'defense' || token.team === 'ball' || !boardStore.showDefense) {
+    return false
+  }
+  const canvas = canvasRef.value
+  if (!canvas) return false
+  const rect = canvas.getBoundingClientRect()
+  if (!rect.width || !rect.height) return false
+
+  const playerRadiusPx = rect.width * 0.035
+  const touchThresholdPx = playerRadiusPx * 2.15
+
+  return boardStore.currentFrame.tokens.some((other) => {
+    if (other.team !== 'defense' || other.id === token.id) return false
+    const dx = (other.x - token.x) * rect.width
+    const dy = (other.y - token.y) * rect.height
+    return Math.hypot(dx, dy) <= touchThresholdPx
+  })
 }
 
 function eraseStrokesNear(normX, normY) {
@@ -162,8 +182,13 @@ function onPointerMove(event) {
     )
     if (
       movedToken &&
-      (dragAutoTool.value === 'dribble' || dragAutoTool.value === 'arrow')
+      (dragAutoTool.value === 'dribble' ||
+        dragAutoTool.value === 'arrow' ||
+        dragAutoTool.value === 'screen')
     ) {
+      if (dragAutoTool.value === 'arrow' || dragAutoTool.value === 'screen') {
+        dragAutoTool.value = isTouchingDefender(movedToken) ? 'screen' : 'arrow'
+      }
       const lastPt = dragTrailPoints.value[dragTrailPoints.value.length - 1]
       if (lastPt && Math.hypot(movedToken.x - lastPt.x, movedToken.y - lastPt.y) > 0.005) {
         dragTrailPoints.value.push({ x: movedToken.x, y: movedToken.y })
@@ -215,10 +240,15 @@ function onPointerUp(event) {
     const receiver = boardStore.finalizeTokenDrop(tokenId)
 
     if (
-      (dragAutoTool.value === 'dribble' || dragAutoTool.value === 'arrow') &&
+      (dragAutoTool.value === 'dribble' ||
+        dragAutoTool.value === 'arrow' ||
+        dragAutoTool.value === 'screen') &&
       movedToken &&
       dragTrailPoints.value.length >= 2
     ) {
+      if (dragAutoTool.value === 'arrow' || dragAutoTool.value === 'screen') {
+        dragAutoTool.value = isTouchingDefender(movedToken) ? 'screen' : 'arrow'
+      }
       const trimmed = getTrimmedTrailPoints(dragTrailPoints.value, movedToken, 0.038)
       if (trimmed.length >= 2) {
         boardStore.addStroke({
@@ -485,7 +515,13 @@ function drawSingleStroke(ctx, stroke, w, h) {
   const pixelPts = pts.map((p) => ({ x: p.x * w, y: p.y * h }))
   const first = pixelPts[0]
   const last = pixelPts[pixelPts.length - 1]
-  const prev = pixelPts[Math.max(0, pixelPts.length - 2)]
+  let prev = pixelPts[0]
+  for (let i = pixelPts.length - 2; i >= 0; i--) {
+    if (Math.hypot(last.x - pixelPts[i].x, last.y - pixelPts[i].y) >= 4) {
+      prev = pixelPts[i]
+      break
+    }
+  }
   const headSize = Math.max(11, stroke.width * 3.4 * (w / 750))
 
   if (stroke.tool === 'pass') {
@@ -660,7 +696,10 @@ function renderBoard() {
       (t) => t.id === draggingTokenId.value
     )
     const previewPoints =
-      (dragAutoTool.value === 'dribble' || dragAutoTool.value === 'arrow') && movedToken
+      (dragAutoTool.value === 'dribble' ||
+        dragAutoTool.value === 'arrow' ||
+        dragAutoTool.value === 'screen') &&
+      movedToken
         ? getTrimmedTrailPoints(dragTrailPoints.value, movedToken, 0.038)
         : dragTrailPoints.value
     if (previewPoints.length >= 2) {
